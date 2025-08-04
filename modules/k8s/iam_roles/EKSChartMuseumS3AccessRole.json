@@ -1,0 +1,18 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::${account_id}:oidc-provider/${cluster_oidc}"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "${cluster_oidc}:sub": "system:serviceaccount:chartmuseum:chartmuseum",
+          "${cluster_oidc}:aud": "sts.amazonaws.com"
+        }
+      }
+    }
+  ]
+}

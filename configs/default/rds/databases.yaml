@@ -1,0 +1,11 @@
+postgresql:
+  apply_immediately: false
+  allow_major_version_upgrade: false
+  multi_az: false
+  skip_final_snapshot: false
+  security_group_name: "postgresql"
+  instance_class: "db.t4g.small"
+  allocated_storage: 16
+  max_allocated_storage: 32
+  engine: "postgres"
+  engine_version: "14.13"

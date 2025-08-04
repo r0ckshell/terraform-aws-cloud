@@ -1,0 +1,14 @@
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Sid": "AllowAccessToClusterAPI",
+			"Effect": "Allow",
+			"Action": [
+				"eks:AccessKubernetesApi",
+				"eks:DescribeCluster"
+			],
+			"Resource": "${cluster_arn}"
+		}
+	]
+}

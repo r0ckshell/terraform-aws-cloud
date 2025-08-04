@@ -1,0 +1,45 @@
+# secrets-store-csi-driver:
+#   name: "secrets-store-csi-driver"
+#   repository: "https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts"
+#   chart: "secrets-store-csi-driver"
+#   version: "0.3.9" # https://github.com/aws/secrets-store-csi-driver-provider-aws
+#   namespace: "kube-system"
+
+ingress-nginx:
+  name: "ingress-nginx"
+  repository: "https://kubernetes.github.io/ingress-nginx"
+  chart: "ingress-nginx"
+  version: "4.12.1" # https://github.com/kubernetes/ingress-nginx/tags
+  namespace: "ingress-nginx"
+
+cert-manager:
+  name: "cert-manager"
+  repository: "https://charts.jetstack.io"
+  chart: "cert-manager"
+  version: "1.16.0"
+  namespace: "cert-manager"
+  set:
+    0:
+      name: "crds.enabled"
+      value: true
+
+hashicorp-vault:
+  name: "hashicorp"
+  repository: "https://helm.releases.hashicorp.com"
+  chart: "vault"
+  version: "0.29.1" # https://github.com/hashicorp/vault-helm
+  namespace: "hashicorp"
+
+metrics-server:
+  name: "metrics-server"
+  repository: "https://kubernetes-sigs.github.io/metrics-server/"
+  chart: "metrics-server"
+  version: "3.12.2"
+  namespace: "metrics"
+
+# chartmuseum:
+#   name: "chartmuseum"
+#   repository: "https://chartmuseum.github.io/charts"
+#   chart: "chartmuseum"
+#   version: "3.10.3"
+#   namespace: "chartmuseum"

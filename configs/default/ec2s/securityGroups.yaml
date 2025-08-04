@@ -1,0 +1,32 @@
+bastion:
+  description: "bastion"
+  ingress-rules: [
+    {
+      description: "Allow inbound SSH connections from anywhere",
+      port: 22,
+      protocol: "tcp",
+      cidr_blocks: ["0.0.0.0/0"],
+    },
+  ]
+
+hashicorp-vault:
+  description: "Hashicorp Vault EC2 Instance security group"
+  ingress-rules: [
+    {
+      description: "Allow inbound SSH connections from the VPC only",
+      port: 22,
+      protocol: "tcp",
+    },
+    {
+      description: "Allow inbound connections to 80 port from anywhere",
+      port: 80,
+      protocol: "tcp",
+      cidr_blocks: ["0.0.0.0/0"],
+    },
+    {
+      description: "Allow inbound connections to 443 port from anywhere",
+      port: 443,
+      protocol: "tcp",
+      cidr_blocks: ["0.0.0.0/0"],
+    },
+  ]

@@ -1,0 +1,30 @@
+global:
+  externalVaultAddr: ${externalVaultAddr}
+
+  ## TLS for end-to-end encrypted transport
+  ##
+  tlsDisable: false
+
+server:
+  enabled: false
+  serviceAccount:
+    create: false
+
+injector:
+  enabled: true
+  serviceAccount:
+    create: true
+    name: "hashicorp-vault-agent-injector"
+    annotations: {}
+  ## Supported log levels include: trace, debug, info, warn, error
+  ##
+  logLevel: "error"
+
+securityContext:
+  container:
+    seccompProfile:
+      type: "RuntimeDefault"
+    capabilities:
+      drop: ["ALL"]
+    privileged: false
+    allowPrivilegeEscalation: false

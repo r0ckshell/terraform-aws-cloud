@@ -1,0 +1,8 @@
+postgresql:
+  description: "Security group for PostgreSQL RDS instance."
+  ingress-rules: [
+    {
+      port: 5432,
+      protocol: "tcp",
+    },
+  ]

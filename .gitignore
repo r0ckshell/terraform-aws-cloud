@@ -1,0 +1,13 @@
+## Terraform files
+##
+.terraform
+
+## Sensitive files
+##
+*.tfstate
+*.tfstate.*
+*.tfvars
+
+## Include examples
+##
+!terraform.tfvars

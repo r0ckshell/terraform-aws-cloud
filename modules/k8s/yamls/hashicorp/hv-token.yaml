@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hashicorp-vault-agent-injector-token
+  labels:
+    CreatedBy: deployer
+  namespace: hashicorp
+  annotations:
+    kubernetes.io/service-account.name: hashicorp-vault-agent-injector
+type: kubernetes.io/service-account-token

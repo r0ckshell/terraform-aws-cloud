@@ -1,0 +1,35 @@
+replicaCount: 2
+
+env:
+  open:
+    AWS_SDK_LOAD_CONFIG: true
+    ## Storage
+    ##
+    STORAGE: "amazon"
+    STORAGE_AMAZON_REGION: ${aws_region}
+    STORAGE_AMAZON_BUCKET: ${chartmuseum_bucket}
+    ## Charts
+    ##
+    ALLOW_OVERWRITE: true # Allow chart versions to be re-uploaded
+  secret:
+    BASIC_AUTH_USER: ${chartmuseum_auth_user}
+    BASIC_AUTH_PASS: ${chartmuseum_auth_pass}
+
+serviceAccount:
+  name: "chartmuseum"
+
+ingress:
+  enabled: true
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt"
+    kubernetes.io/ingress.class: "nginx"
+  labels:
+  hosts:
+    - name: ${chartmuseum_domain}
+      tls: true
+      tlsSecret: "${chartmuseum_domain}-tls"
+
+resources:
+ requests:
+   cpu: "80m"
+   memory: "64Mi"
