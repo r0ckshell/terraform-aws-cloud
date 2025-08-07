@@ -2,7 +2,7 @@ locals {
   vpc_name     = replace(lower(var.vpc_name), " ", "-")
   cluster_name = replace(lower(var.cluster_name), " ", "-")
 
-  ### ec2s
+  ### ec2s module
   ## Apply the `module.vpc` first to ensure the subnet IDs are available for other modules.
   ## The VPC module (module.vpc) must be applied first to ensure that
   ## subnet values (module.vpc.public_subnets & module.vpc.private_subnets) are available.
@@ -18,18 +18,15 @@ locals {
   ec2s_security_groups = yamldecode(file("${path.root}/configs/${terraform.workspace}/ec2s/securityGroups.yaml"))
   ec2s_ssh_key_name    = "${terraform.workspace}-deployer.key"
 
-  ### rds
+  ### rds module
   ##
   rds_security_groups = yamldecode(file("${path.root}/configs/${terraform.workspace}/rds/securityGroups.yaml"))
   databases           = yamldecode(file("${path.root}/configs/${terraform.workspace}/rds/databases.yaml"))
 
-  ### eks
+  ### eks module
   ##
   eks_node_groups = yamldecode(file("${path.root}/configs/${terraform.workspace}/eks/nodeGroups.yaml"))
-  kubeconfig_path = "${path.root}/.terraform/kube/${local.cluster_name}.k8s.yml"
 
-  ### Default tags
-  ##
   tags = {
     CreatedBy = "Terraform"
   }
