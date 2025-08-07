@@ -1,6 +1,5 @@
 x86-spot-workers: # $27.88/monthly * desired_size
   name: "x86-spot-workers-20241218"
-  ami_type: "AL2_x86_64"
   instance_types: ["t3.large"]
   capacity_type: "SPOT"
   disk_size: 128
@@ -11,7 +10,6 @@ x86-spot-workers: # $27.88/monthly * desired_size
 
 x86-main-workers: # $33.28/monthly * desired_size
   name: "x86-main-workers-20241216"
-  ami_type: "AL2_x86_64"
   release_version: "1.31.3-20241213"
   instance_types: ["t3.medium"]
   capacity_type: "ON_DEMAND"

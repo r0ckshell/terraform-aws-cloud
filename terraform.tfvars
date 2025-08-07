@@ -14,8 +14,8 @@ private_subnet_cidrs = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
 
 ### EKS
 ##
-cluster_name    = "main"
-cluster_version = "1.33"
+cluster_name       = "main"
+kubernetes_version = "1.33"
 
 ### K8S
 ## Helm

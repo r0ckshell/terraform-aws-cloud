@@ -32,19 +32,13 @@ module "rds" {
 }
 
 module "eks" {
-  source          = "./modules/eks"
-  cluster_version = var.cluster_version
-  vpc_id          = module.vpc.vpc_id
-  vpc_cidr_block  = module.vpc.vpc_cidr_block
-  private_subnets = module.vpc.private_subnets
-  cluster_name    = local.cluster_name
-  kubeconfig_path = local.kubeconfig_path
-  node_groups     = local.eks_node_groups
-  ## These variables are used to create kubeconfig only
-  ##
-  region     = var.AWS_REGION
-  access_key = var.AWS_ACCESS_KEY_ID
-  secret_key = var.AWS_SECRET_ACCESS_KEY
+  source             = "./modules/eks"
+  kubernetes_version = var.kubernetes_version
+  vpc_id             = module.vpc.vpc_id
+  vpc_cidr_block     = module.vpc.vpc_cidr_block
+  private_subnets    = module.vpc.private_subnets
+  cluster_name       = local.cluster_name
+  node_groups        = local.eks_node_groups
 
   tags = local.tags
 }

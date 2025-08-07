@@ -55,9 +55,9 @@ variable "cluster_name" {
   description = "Cluster Name"
   default     = "main"
 }
-variable "cluster_version" {
+variable "kubernetes_version" {
   type        = string
-  description = "cluster_version"
+  description = "Kubernetes version"
   default     = "1.33"
 }
 

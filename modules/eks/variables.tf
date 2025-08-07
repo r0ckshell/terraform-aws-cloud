@@ -1,15 +1,3 @@
-### AWS
-##
-variable "region" {
-  type = string
-}
-variable "access_key" {
-  type = string
-}
-variable "secret_key" {
-  type = string
-}
-
 ### VPC
 ##
 variable "vpc_id" {
@@ -27,10 +15,7 @@ variable "private_subnets" {
 variable "cluster_name" {
   type = string
 }
-variable "cluster_version" {
-  type = string
-}
-variable "kubeconfig_path" {
+variable "kubernetes_version" {
   type = string
 }
 variable "node_groups" {
