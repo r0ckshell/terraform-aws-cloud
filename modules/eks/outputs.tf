@@ -19,5 +19,5 @@ output "cluster_oidc_issuer_url" {
 }
 
 output "node_role_arn" {
-  value = module.aws_eks.node_iam_role_arn
+  value = aws_iam_role.EKSWorkerNodeRole.arn
 }

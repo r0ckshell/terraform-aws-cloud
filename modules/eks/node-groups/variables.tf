@@ -20,7 +20,6 @@ variable "node_groups" {
   description = "EKS Node Groups configuration"
   type = map(object({
     name           = string
-    ami_type       = string
     instance_types = list(string)
     capacity_type  = string
     disk_size      = number
