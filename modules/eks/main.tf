@@ -23,49 +23,40 @@ resource "aws_iam_role_policy_attachment" "EKSWorkerNodeRole" {
 ##
 module "aws_eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "20.24.1" # https://registry.terraform.io/modules/terraform-aws-modules/eks/aws/latest
+  version = "~> 21.0"
 
-  cluster_name    = var.cluster_name
-  cluster_version = var.kubernetes_version
-  vpc_id          = var.vpc_id
-  subnet_ids      = var.private_subnets # Nodes and Control plane (ENIs) will be provisioned in these subnets.
+  name               = var.cluster_name
+  kubernetes_version = var.kubernetes_version
+  vpc_id             = var.vpc_id
+  subnet_ids         = var.private_subnets # Nodes and Control plane (ENIs) will be provisioned in these subnets.
 
   ## A unique name is formed from the cluster name.
   ## Disable prefixes for everything to improve readability.
   ##
-  cluster_security_group_use_name_prefix    = false
-  node_security_group_use_name_prefix       = false
-  iam_role_use_name_prefix                  = false
-  cluster_encryption_policy_use_name_prefix = false
+  security_group_use_name_prefix      = false
+  node_security_group_use_name_prefix = false
+  iam_role_use_name_prefix            = false
+  encryption_policy_use_name_prefix   = false
 
-  cluster_endpoint_public_access           = true
+  endpoint_public_access                   = true
   enable_cluster_creator_admin_permissions = true
   kms_key_deletion_window_in_days          = 7 # 30 by default
-  cluster_encryption_policy_name           = "${var.cluster_name}.EKSClusterEncryptionPolicy"
+  encryption_policy_name                   = "${var.cluster_name}.EKSClusterEncryptionPolicy"
 
   ### Cluster IAM Role
   ##
-  iam_role_name = "${var.cluster_name}.EKSControlPlaneRole"
-  # iam_role_additional_policies = {}
+  iam_role_name                = "${var.cluster_name}.EKSControlPlaneRole"
+  iam_role_additional_policies = {}
 
   ### Control Plane (Cluster) security group
   ## The EKS service, not the module, creates a "Cluster security group", which is the primary security group for the cluster, including EKS Control Plane nodes and any managed workloads.
   ## The group declared here is one of the "Additional Security Groups" and is not automatically assigned to workloads like the Cluster security group does.
   ## Since the "Cluster security group" is only used to allow workloads in the cluster to communicate with each other and the Control plane,
   ## an "Additional security group" is used to configure a connection to the Control plane (443/HTTPS - Kubernetes API server, default) from outside.
-  ## 
-  cluster_security_group_name        = "${var.cluster_name}.EKSControlPlane"
-  cluster_security_group_description = "EKS Control Plane security group"
-  cluster_security_group_additional_rules = {
-    vpc = {
-      description = "Allow incoming connections to any port within the VPC."
-      type        = "ingress"
-      from_port   = 0
-      to_port     = 0
-      protocol    = -1
-      cidr_blocks = ["${var.vpc_cidr_block}"]
-    }
-  }
+  ##
+  security_group_name             = "${var.cluster_name}.EKSControlPlane"
+  security_group_description      = "EKS Control Plane security group"
+  security_group_additional_rules = {}
 
   ### Worker Nodes security group
   ##
@@ -104,8 +95,7 @@ module "aws_eks" {
   ## Note: `disk_size`, and `remote_access` can only be set when using the EKS Managed Node Group.
   ## When the default launch template is used, the `disk_size` and `remote_access` will be ignored.
   ##
-  eks_managed_node_group_defaults = {}
-  eks_managed_node_groups         = {}
+  eks_managed_node_groups = {}
 
   tags = local.tags
 }
@@ -149,9 +139,9 @@ resource "aws_eks_node_group" "this" {
   dynamic "taint" {
     for_each = each.value.taints != null ? each.value.taints : []
     content {
-      key    = "${taint.value.key}"
-      value  = "${taint.value.value}"
-      effect = "${taint.value.effect}"
+      key    = taint.value.key
+      value  = taint.value.value
+      effect = taint.value.effect
     }
   }
 
