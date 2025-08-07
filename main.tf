@@ -42,7 +42,7 @@ module "eks" {
   tags = local.tags
 }
 
-module "tf_managed_node_groups" {
+module "tf-managed-node-groups" {
   source             = "./modules/eks/node-groups"
   kubernetes_version = var.kubernetes_version
   private_subnets    = module.vpc.private_subnets
