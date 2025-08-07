@@ -17,3 +17,7 @@ output "cluster_endpoint" {
 output "cluster_oidc_issuer_url" {
   value = module.aws_eks.cluster_oidc_issuer_url
 }
+
+output "node_role_arn" {
+  value = module.aws_eks.node_role_arn
+}

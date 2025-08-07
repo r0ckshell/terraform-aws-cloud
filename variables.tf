@@ -1,9 +1,3 @@
-### Terraform
-##
-variable "workspace" {
-  type = string
-}
-
 ### AWS Creds
 ##
 variable "AWS_REGION" {

@@ -38,7 +38,17 @@ module "eks" {
   vpc_cidr_block     = module.vpc.vpc_cidr_block
   private_subnets    = module.vpc.private_subnets
   cluster_name       = local.cluster_name
-  node_groups        = local.eks_node_groups
+
+  tags = local.tags
+}
+
+module "tf_managed_node_groups" {
+  source             = "./modules/eks/node-groups"
+  kubernetes_version = var.kubernetes_version
+  private_subnets    = module.vpc.private_subnets
+  node_role_arn      = module.eks.node_role_arn
+  cluster_name       = local.cluster_name
+  node_groups        = local.tf_managed_node_groups
 
   tags = local.tags
 }
