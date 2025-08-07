@@ -97,6 +97,13 @@ module "aws_eks" {
   ##
   eks_managed_node_groups = {}
 
+  addons = {
+    kube-proxy             = {}
+    vpc-cni                = {}
+    coredns                = {}
+    eks-pod-identity-agent = {}
+  }
+
   tags = local.tags
 }
 
@@ -163,30 +170,4 @@ resource "aws_eks_node_group" "this" {
       scaling_config[0].max_size,
     ]
   }
-}
-
-### Get the recommended version and install EKS addons
-##
-data "aws_eks_addon_version" "this" {
-  for_each = local.addons
-
-  addon_name         = each.key
-  kubernetes_version = module.aws_eks.kubernetes_version
-  # most_recent        = true # Uncomment to use the latest version
-}
-
-resource "aws_eks_addon" "this" {
-  for_each = local.addons
-
-  cluster_name                = module.aws_eks.cluster_name
-  addon_name                  = each.key
-  addon_version               = data.aws_eks_addon_version.this[each.key].version
-  resolve_conflicts_on_create = "OVERWRITE"
-
-  tags = local.tags
-
-  depends_on = [
-    module.aws_eks,
-    aws_eks_node_group.this, # It is necessary to wait until at least one node group is created.
-  ]
 }

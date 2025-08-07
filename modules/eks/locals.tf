@@ -25,14 +25,4 @@ locals {
       AmazonEBSCSIDriverPolicy           = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
     }
   }
-
-  addons = {
-    kube-proxy             = {}
-    vpc-cni                = {}
-    coredns                = {}
-    eks-pod-identity-agent = {}
-    # Addons must be created with IRSA
-    # aws-ebs-csi-driver
-    # aws-efs-csi-driver
-  }
 }
