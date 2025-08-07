@@ -26,7 +26,7 @@ locals {
   ### eks module
   ## Terraform managed node groups
   ##
-  tf_managed_node_groups = yamldecode(file("${path.root}/configs/${terraform.workspace}/eks/node-groups.yaml"))
+  tf_managed_node_groups = try(yamldecode(file("${path.root}/configs/${terraform.workspace}/eks/node-groups.yaml")), {})
 
   tags = {
     CreatedBy = "Terraform"
