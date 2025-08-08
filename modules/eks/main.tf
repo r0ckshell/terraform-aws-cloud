@@ -54,9 +54,20 @@ module "aws_eks" {
   ## Since the "Cluster security group" is only used to allow workloads in the cluster to communicate with each other and the Control plane,
   ## an "Additional security group" is used to configure a connection to the Control plane (443/HTTPS - Kubernetes API server, default) from outside.
   ##
-  security_group_name             = "${var.cluster_name}.EKSControlPlane"
-  security_group_description      = "EKS Control Plane security group"
-  security_group_additional_rules = {}
+  security_group_name        = "${var.cluster_name}.EKSControlPlane"
+  security_group_description = "EKS Control Plane security group"
+  security_group_additional_rules = {
+    ## TODO: Restrict access to the Cluster API using `source_security_group_id` instead of `cidr_blocks`.
+    ##
+    ingress_vpc_to_cluster_api = {
+      description = "Any workload in VPC to Cluster API"
+      type        = "ingress"
+      protocol    = "tcp"
+      from_port   = 443
+      to_port     = 443
+      cidr_blocks = ["${var.vpc_cidr_block}"]
+    }
+  }
 
   ### Worker Nodes security group
   ##
@@ -66,7 +77,7 @@ module "aws_eks" {
   node_security_group_additional_rules = {
     ## Added this to avoid issues with add-ons communication with Control plane.
     ##
-    # ingress_cluster_to_node_all_traffic = {
+    # ingress_cluster_api_to_node_all_traffic = {
     #   description                   = "Cluster API to Nodegroup all traffic"
     #   type                          = "ingress"
     #   protocol                      = "-1"
@@ -74,10 +85,10 @@ module "aws_eks" {
     #   to_port                       = 0
     #   source_cluster_security_group = true
     # }
-    ## Services that use port 8080
-    ## - hashicorp-vault-agent-injector
+    ## Hashicorp Vault Agent Injector
+    ## ref: https://developer.hashicorp.com/vault/docs/deploy/kubernetes/injector/examples#connectivity
     ##
-    ingress_cluster_to_node_8080_tcp_webhook = {
+    ingress_cluster_api_to_node_8080_tcp_webhook = {
       description                   = "Cluster API to node 8080/tcp webhook"
       type                          = "ingress"
       protocol                      = "tcp"
@@ -95,7 +106,34 @@ module "aws_eks" {
   ## Note: `disk_size`, and `remote_access` can only be set when using the EKS Managed Node Group.
   ## When the default launch template is used, the `disk_size` and `remote_access` will be ignored.
   ##
-  eks_managed_node_groups = {}
+  eks_managed_node_groups = {
+    karpenter-workers = {
+      create = "${var.use_karpenter}" # EKS Module expects a string here.
+
+      launch_template_use_name_prefix = false
+      use_name_prefix                 = false
+      create_iam_role                 = false
+      iam_role_arn                    = "${aws_iam_role.EKSWorkerNodeRole.arn}"
+      ami_type                        = "BOTTLEROCKET_ARM_64"
+      use_latest_ami_release_version  = true
+      instance_types                  = ["t4g.small"]
+      capacity_type                   = "SPOT"
+      desired_size                    = 2
+      max_size                        = 2
+      min_size                        = 1
+
+      labels = { "karpenter.sh/controller" = "true" }
+      taints = {
+        ## Use this node group to run the Karpenter controller only.
+        ##
+        karpenter_controller = {
+          key    = "karpenter.sh/controller"
+          value  = "true"
+          effect = "NO_SCHEDULE"
+        }
+      }
+    }
+  }
 
   addons = {
     kube-proxy             = {}
@@ -104,70 +142,27 @@ module "aws_eks" {
     eks-pod-identity-agent = {}
   }
 
+  node_security_group_tags = var.use_karpenter ? merge(local.tags, {
+    ## Tag the node security group to be used by Karpenter.
+    ##
+    "karpenter.sh/discovery" = "true"
+  }) : {}
   tags = local.tags
 }
 
-### Get the latest version of EKS AMI
-## Example:
-## aws ssm get-parameter --name /aws/service/bottlerocket/aws-k8s-1.31/x86_64/latest/image_id \
-##   --region us-west-2 --query "Parameter.Value" --output text
-##
-data "aws_ssm_parameter" "eks_ami_release_version" {
-  name = "/aws/service/bottlerocket/aws-k8s-${module.aws_eks.kubernetes_version}/x86_64/latest/image_id"
-}
+module "aws_eks_karpenter" {
+  create = var.use_karpenter
 
-### Create EKS Node Groups
-##
-resource "aws_eks_node_group" "this" {
-  for_each = var.node_groups
+  source = "./karpenter"
 
-  cluster_name  = module.aws_eks.cluster_name
-  node_role_arn = aws_iam_role.EKSWorkerNodeRole.arn
-  subnet_ids    = var.private_subnets
+  cluster_name     = module.aws_eks.cluster_name
+  cluster_endpoint = module.aws_eks.cluster_endpoint
 
-  node_group_name = each.value.name
-  release_version = try(each.value.release_version, nonsensitive(data.aws_ssm_parameter.eks_ami_release_version.value))
-  instance_types  = each.value.instance_types
-  capacity_type   = each.value.capacity_type
-  disk_size       = each.value.disk_size
+  ## Make sure that the Karpenter node role has the same policies as the EKS Worker node role.
+  ##
+  node_iam_role_additional_policies = local.EKSWorkerNodeRole.attachments
 
-  # remote_access {
-  #   source_security_group_ids = [
-  #     module.aws_eks.node_security_group_id,
-  #   ]
-  # }
-
-  scaling_config {
-    min_size     = try(each.value.scaling_config.min_size, 0)
-    desired_size = try(each.value.scaling_config.desired_size, 1)
-    max_size     = try(each.value.scaling_config.max_size, 4)
-  }
-
-  dynamic "taint" {
-    for_each = each.value.taints != null ? each.value.taints : []
-    content {
-      key    = taint.value.key
-      value  = taint.value.value
-      effect = taint.value.effect
-    }
-  }
-
-  update_config {
-    max_unavailable = 1 # default value
-  }
+  create_test_resources = var.create_test_resources
 
   tags = local.tags
-
-  depends_on = [
-    module.aws_eks,
-    aws_iam_role_policy_attachment.EKSWorkerNodeRole,
-  ]
-
-  lifecycle {
-    create_before_destroy = true
-    ignore_changes = [
-      scaling_config[0].desired_size,
-      scaling_config[0].max_size,
-    ]
-  }
 }

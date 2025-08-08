@@ -1,5 +1,4 @@
-### VPC
-##
+#region vpc
 variable "vpc_id" {
   type = string
 }
@@ -9,40 +8,26 @@ variable "vpc_cidr_block" {
 variable "private_subnets" {
   type = list(string)
 }
+#endregion
 
-### EKS
-##
+#region eks
 variable "cluster_name" {
   type = string
 }
 variable "kubernetes_version" {
   type = string
 }
-variable "node_groups" {
-  description = "EKS Node Groups configuration"
-  type = map(object({
-    name           = string
-    ami_type       = string
-    instance_types = list(string)
-    capacity_type  = string
-    disk_size      = number
-    scaling_config = object({
-      min_size     = number
-      desired_size = number
-      max_size     = number
-    })
-    taints = optional(list(object({
-      key    = string
-      value  = string
-      effect = string
-    })))
-    release_version = optional(string)
-  }))
-  default = {}
+variable "use_karpenter" {
+  type    = bool
+  default = true
+}
+#endregion
+
+variable "create_test_resources" {
+  type    = bool
+  default = false
 }
 
-### Tags
-##
 variable "tags" {
   type = map(string)
 }
