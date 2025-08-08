@@ -1,31 +1,9 @@
-x86-spot-workers: # $27.88/monthly * desired_size
-  name: "x86-spot-workers-20241218"
-  instance_types: ["t3.large"]
+spot-workers:
+  name: "spot-workers"
+  ami_type: "BOTTLEROCKET_x86_64"
+  instance_types: ["t3.small"]
   capacity_type: "SPOT"
-  disk_size: 128
-  scaling_config: 
+  scaling_config:
     min_size: 1
     desired_size: 2
     max_size: 4
-
-x86-main-workers: # $33.28/monthly * desired_size
-  name: "x86-main-workers-20241216"
-  release_version: "1.31.3-20241213"
-  instance_types: ["t3.medium"]
-  capacity_type: "ON_DEMAND"
-  disk_size: 32
-  scaling_config: 
-    min_size: 1
-    desired_size: 1
-    max_size: 4
-
-# arm-redis-workers:
-#   name: "arm-redis-workers-20241216"
-#   ami_type: "AL2_ARM_64"
-#   instance_types: ["t4g.small"]
-#   capacity_type: "ON_DEMAND"
-#   disk_size: 32
-#   scaling_config: 
-#     min_size: 1
-#     desired_size: 1
-#     max_size: 4
