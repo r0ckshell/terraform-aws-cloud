@@ -54,9 +54,20 @@ module "aws_eks" {
   ## Since the "Cluster security group" is only used to allow workloads in the cluster to communicate with each other and the Control plane,
   ## an "Additional security group" is used to configure a connection to the Control plane (443/HTTPS - Kubernetes API server, default) from outside.
   ##
-  security_group_name             = "${var.cluster_name}.EKSControlPlane"
-  security_group_description      = "EKS Control Plane security group"
-  security_group_additional_rules = {}
+  security_group_name        = "${var.cluster_name}.EKSControlPlane"
+  security_group_description = "EKS Control Plane security group"
+  security_group_additional_rules = {
+    ## TODO: Restrict access to the Cluster API using `source_security_group_id` instead of `cidr_blocks`.
+    ##
+    ingress_vpc_to_cluster_api = {
+      description = "Any workload in VPC to Cluster API"
+      type        = "ingress"
+      protocol    = "tcp"
+      from_port   = 443
+      to_port     = 443
+      cidr_blocks = ["${var.vpc_cidr_block}"]
+    }
+  }
 
   ### Worker Nodes security group
   ##
@@ -66,7 +77,7 @@ module "aws_eks" {
   node_security_group_additional_rules = {
     ## Added this to avoid issues with add-ons communication with Control plane.
     ##
-    # ingress_cluster_to_node_all_traffic = {
+    # ingress_cluster_api_to_node_all_traffic = {
     #   description                   = "Cluster API to Nodegroup all traffic"
     #   type                          = "ingress"
     #   protocol                      = "-1"
@@ -74,10 +85,10 @@ module "aws_eks" {
     #   to_port                       = 0
     #   source_cluster_security_group = true
     # }
-    ## Services that use port 8080
-    ## - hashicorp-vault-agent-injector
+    ## Hashicorp Vault Agent Injector
+    ## ref: https://developer.hashicorp.com/vault/docs/deploy/kubernetes/injector/examples#connectivity
     ##
-    ingress_cluster_to_node_8080_tcp_webhook = {
+    ingress_cluster_api_to_node_8080_tcp_webhook = {
       description                   = "Cluster API to node 8080/tcp webhook"
       type                          = "ingress"
       protocol                      = "tcp"
