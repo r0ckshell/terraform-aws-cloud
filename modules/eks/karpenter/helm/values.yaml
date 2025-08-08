@@ -11,7 +11,7 @@ tolerations:
     value: "true"
     effect: "NoSchedule"
 
-logLevel: "info"
+logLevel: "error"
 
 serviceAccount:
   name: ${service_account}
