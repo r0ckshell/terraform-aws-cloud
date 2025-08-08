@@ -1,30 +1,54 @@
-## Hashicorp Vault integration setup
+# Hashicorp Vault integration setup
 
-### Configure the Kubernetes auth method
+## Configure the Kubernetes auth method
 
 ```bash
-kubectl apply -f ./modules/k8s/yamls/hashicorp/hv-crb.yaml
-kubectl apply -f ./modules/k8s/yamls/hashicorp/hv-token.yaml
+kubectl apply -f - <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: hashicorp-vault-agent-injector-token-review-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+- kind: ServiceAccount
+  name: hashicorp-vault-agent-injector
+  namespace: hashicorp
+EOF
 ```
+
+```bash
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hashicorp-vault-agent-injector-token
+  namespace: hashicorp
+  annotations:
+    kubernetes.io/service-account.name: hashicorp-vault-agent-injector
+type: kubernetes.io/service-account-token
+EOF
+```
+
+## Configure Vault
 
 ```bash
 vault auth enable kubernetes
 
-export k8s_api_host=$(kubectl cluster-info | head -n 1 | awk '{ print $7 }' | sed -r "s/\x1B\[([0-9]{1,3}(;[0-9]{1,2})?)?[mGK]//g")
-
-export sa_ca_cert=$(kubectl get -n hashicorp secrets -o json \
-  | jq -r --arg vault_sa_name "hashicorp-vault-agent-injector" '.items[] | select(.type == "kubernetes.io/service-account-token") | . | select(.metadata.annotations."kubernetes.io/service-account.name" == $vault_sa_name ) | .data."ca.crt"' | base64 -d)
-
-export sa_jwt_token=$(kubectl get -n hashicorp secrets -o json \
-  | jq -r --arg vault_sa_name "hashicorp-vault-agent-injector" '.items[] | select(.type == "kubernetes.io/service-account-token") | . | select(.metadata.annotations."kubernetes.io/service-account.name" == $vault_sa_name ) | .data.token' | base64 -d)
+TOKEN_REVIEW_JWT=$(kubectl get secret hashicorp-vault-agent-injector-token -n hashicorp -o go-template='{{ .data.token }}' | base64 --decode)
+KUBE_HOST=$(kubectl config view --raw --minify --flatten --output='jsonpath={.clusters[].cluster.server}')
+KUBE_CA_CERT=$(kubectl config view --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}' | base64 --decode)
 
 vault write auth/kubernetes/config \
-  kubernetes_host=${k8s_api_host} \
-  kubernetes_ca_cert=${sa_ca_cert} \
-  token_reviewer_jwt=${sa_jwt_token}
+  token_reviewer_jwt="$TOKEN_REVIEW_JWT" \
+  kubernetes_host="$KUBE_HOST" \
+  kubernetes_ca_cert="$KUBE_CA_CERT" \
+  disable_local_ca_jwt="true"
 
 vault policy write read-policy - <<EOF
-path "kv/data/test/secrets" {
+path "kv/data/test/secret" {
   capabilities = ["read"]
 }
 EOF
