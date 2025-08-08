@@ -1,0 +1,34 @@
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: default
+spec:
+  role: ${iam_role_name}
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: "true"
+  securityGroupSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: "true"
+
+  ## ref: https://karpenter.sh/docs/concepts/nodeclasses/#specamiselectorterms
+  ## ref: https://docs.aws.amazon.com/eks/latest/best-practices/karpenter.html
+  ##
+  amiSelectorTerms:
+    - alias: "bottlerocket@latest"
+
+  blockDeviceMappings:
+    # Root device
+    - deviceName: /dev/xvda
+      ebs:
+        volumeSize: 2Gi # Minimum Root volume size for Bottlerocket
+        volumeType: gp3
+        encrypted: true
+        deleteOnTermination: true
+    # Data device: Container resources such as images and logs
+    - deviceName: /dev/xvdb
+      ebs:
+        volumeSize: ${data_volume_size}
+        volumeType: gp3
+        encrypted: true
+        deleteOnTermination: true

@@ -16,5 +16,6 @@ module "aws_vpc" {
 
   enable_vpn_gateway = false
 
-  tags = local.tags
+  private_subnet_tags = local.private_subnet_tags
+  tags                = local.tags
 }

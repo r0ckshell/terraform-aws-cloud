@@ -54,27 +54,35 @@ variable "kubernetes_version" {
   description = "Kubernetes version"
   default     = "1.33"
 }
+variable "use_karpenter" {
+  type        = bool
+  description = "Whether to use Karpenter for node management"
+  default     = true
+}
 
 ### K8S
-## Helm
 ##
 variable "vault_addr" {
-  type = string
+  type        = string
   description = "Hashicorp Vault server domain name"
-  default     = "https://hv.domain.com"
 }
 variable "chartmuseum_domain" {
-  type = string
+  type        = string
   description = "Chartmuseum server domain name"
-  default     = "https://cm.domain.com"
 }
 
 ### EC2s
-## TODO: Since Amazon EKS will no longer publish EKS-optimized Amazon Linux 2 (AL2) AMIs after November 26th, 2025,
-## use the Bottlerocket AMI instead.
 ##
 variable "ami" {
   type        = string
   description = "Amazon Machine Image, default: Amazon Linux 2023 64-bit (ARM)"
   default     = "ami-0b947c5d5516fa06e"
+}
+
+### Test Resources
+##
+variable "create_test_resources" {
+  type        = bool
+  description = "Whether to create test resources"
+  default     = false
 }

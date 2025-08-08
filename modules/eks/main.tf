@@ -106,7 +106,34 @@ module "aws_eks" {
   ## Note: `disk_size`, and `remote_access` can only be set when using the EKS Managed Node Group.
   ## When the default launch template is used, the `disk_size` and `remote_access` will be ignored.
   ##
-  eks_managed_node_groups = {}
+  eks_managed_node_groups = {
+    karpenter-workers = {
+      create = "${var.use_karpenter}" # EKS Module expects a string here.
+
+      launch_template_use_name_prefix = false
+      use_name_prefix                 = false
+      create_iam_role                 = false
+      iam_role_arn                    = "${aws_iam_role.EKSWorkerNodeRole.arn}"
+      ami_type                        = "BOTTLEROCKET_ARM_64"
+      use_latest_ami_release_version  = true
+      instance_types                  = ["t4g.small"]
+      capacity_type                   = "SPOT"
+      desired_size                    = 2
+      max_size                        = 2
+      min_size                        = 1
+
+      labels = { "karpenter.sh/controller" = "true" }
+      taints = {
+        ## Use this node group to run the Karpenter controller only.
+        ##
+        karpenter_controller = {
+          key    = "karpenter.sh/controller"
+          value  = "true"
+          effect = "NO_SCHEDULE"
+        }
+      }
+    }
+  }
 
   addons = {
     kube-proxy             = {}
@@ -114,6 +141,28 @@ module "aws_eks" {
     coredns                = {}
     eks-pod-identity-agent = {}
   }
+
+  node_security_group_tags = var.use_karpenter ? merge(local.tags, {
+    ## Tag the node security group to be used by Karpenter.
+    ##
+    "karpenter.sh/discovery" = "true"
+  }) : {}
+  tags = local.tags
+}
+
+module "aws_eks_karpenter" {
+  create = var.use_karpenter
+
+  source = "./karpenter"
+
+  cluster_name     = module.aws_eks.cluster_name
+  cluster_endpoint = module.aws_eks.cluster_endpoint
+
+  ## Make sure that the Karpenter node role has the same policies as the EKS Worker node role.
+  ##
+  node_iam_role_additional_policies = local.EKSWorkerNodeRole.attachments
+
+  create_test_resources = var.create_test_resources
 
   tags = local.tags
 }
