@@ -1,14 +1,3 @@
-### Get the latest version of EKS AMI
-## Example:
-## aws ssm get-parameter --name /aws/service/bottlerocket/aws-k8s-1.31/x86_64/latest/image_id \
-##   --region us-west-2 --query "Parameter.Value" --output text
-##
-data "aws_ssm_parameter" "eks_ami_release_version" {
-  name = "/aws/service/bottlerocket/aws-k8s-${var.kubernetes_version}/x86_64/latest/image_id"
-}
-
-### Create EKS Node Groups
-##
 resource "aws_eks_node_group" "this" {
   for_each = var.node_groups
 
@@ -17,16 +6,10 @@ resource "aws_eks_node_group" "this" {
   subnet_ids    = var.private_subnets
 
   node_group_name = each.value.name
-  release_version = try(each.value.release_version, nonsensitive(data.aws_ssm_parameter.eks_ami_release_version.value))
+  ami_type        = each.value.ami_type
   instance_types  = each.value.instance_types
   capacity_type   = each.value.capacity_type
   disk_size       = each.value.disk_size
-
-  # remote_access {
-  #   source_security_group_ids = [
-  #     module.aws_eks.node_security_group_id,
-  #   ]
-  # }
 
   scaling_config {
     min_size     = try(each.value.scaling_config.min_size, 0)

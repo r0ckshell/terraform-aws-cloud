@@ -17,23 +17,23 @@ variable "node_role_arn" {
   type        = string
 }
 variable "node_groups" {
-  description = "EKS Node Groups configuration"
+  description = "Terraform managed node groups configuration"
   type = map(object({
     name           = string
+    ami_type       = string
     instance_types = list(string)
     capacity_type  = string
-    disk_size      = number
-    scaling_config = object({
+    disk_size      = optional(number, 32)
+    scaling_config = optional(object({
       min_size     = number
       desired_size = number
       max_size     = number
-    })
+    }))
     taints = optional(list(object({
       key    = string
       value  = string
       effect = string
     })))
-    release_version = optional(string)
   }))
   default = {}
 }
