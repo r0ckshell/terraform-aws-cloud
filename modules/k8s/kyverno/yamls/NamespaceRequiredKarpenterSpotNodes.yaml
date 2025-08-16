@@ -1,0 +1,27 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: namespace-required-karpenter-spot-nodes
+spec:
+  rules:
+    - name: namespace-required-karpenter-spot-nodes
+      match:
+        resources:
+          kinds:
+            - Pod
+          selector:
+            matchExpressions: # Apply policy to all pods within the namespace with this label.
+              - key: karpenter.sh/required-node-capacity-type
+                operator: In
+                values: [spot]
+      mutate:
+        patchStrategicMerge:
+          spec:
+            affinity:
+              nodeAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  nodeSelectorTerms:
+                    - matchExpressions:
+                        - key: karpenter.sh/capacity-type
+                          operator: In
+                          values: [spot]

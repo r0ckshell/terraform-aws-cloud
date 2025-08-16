@@ -7,7 +7,12 @@
 *.tfstate
 *.tfstate.*
 *.tfvars
+*.tfplan
 
 ## Include examples
 ##
 !terraform.tfvars
+
+## System files
+##
+.DS_Store

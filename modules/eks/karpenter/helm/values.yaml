@@ -5,15 +5,17 @@ settings:
 
 nodeSelector:
   karpenter.sh/controller: "true"
-tolerations:
-  - key: "karpenter.sh/controller"
-    operator: "Equal"
-    value: "true"
-    effect: "NoSchedule"
+# tolerations:
+#   - key: "karpenter.sh/controller"
+#     operator: "Equal"
+#     value: "true"
+#     effect: "NoSchedule"
 
-logLevel: "error"
+logLevel: "info"
 
 serviceAccount:
   name: ${service_account}
   annotations:
     eks.amazonaws.com/role-arn: ${iam_role_arn}
+
+replicas: ${replicas}

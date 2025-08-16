@@ -107,31 +107,19 @@ module "aws_eks" {
   ## When the default launch template is used, the `disk_size` and `remote_access` will be ignored.
   ##
   eks_managed_node_groups = {
-    karpenter-workers = {
-      create = "${var.use_karpenter}" # EKS Module expects a string here.
-
+    x86-system-workers = {
       launch_template_use_name_prefix = false
       use_name_prefix                 = false
       create_iam_role                 = false
       iam_role_arn                    = "${aws_iam_role.EKSWorkerNodeRole.arn}"
-      ami_type                        = "BOTTLEROCKET_ARM_64"
+      ami_type                        = "BOTTLEROCKET_x86_64" # Only 20GB disk size available with default launch template.
       use_latest_ami_release_version  = true
-      instance_types                  = ["t4g.small"]
-      capacity_type                   = "SPOT"
-      desired_size                    = 2
-      max_size                        = 2
-      min_size                        = 1
+      instance_types                  = ["t3.medium"]
+      capacity_type                   = "ON_DEMAND"
 
-      labels = { "karpenter.sh/controller" = "true" }
-      taints = {
-        ## Use this node group to run the Karpenter controller only.
-        ##
-        karpenter_controller = {
-          key    = "karpenter.sh/controller"
-          value  = "true"
-          effect = "NO_SCHEDULE"
-        }
-      }
+      ## Tag the node group where the Karpenter controller will run.
+      ##
+      labels = var.use_karpenter ? { "karpenter.sh/controller" = "true" } : {}
     }
   }
 

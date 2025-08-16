@@ -1,0 +1,45 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-karpenter
+  namespace: default
+  labels:
+    app: test-karpenter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-karpenter
+  template:
+    metadata:
+      labels:
+        app: test-karpenter
+    spec:
+      nodeSelector:
+        karpenter.sh/required-node-capacity-type: spot
+      containers:
+        - name: test-container
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5

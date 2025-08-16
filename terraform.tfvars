@@ -18,7 +18,6 @@ cluster_name       = "main"
 kubernetes_version = "1.33"
 
 ### K8S
-## Helm
 ##
 vault_addr         = "hv.domain.com"
 chartmuseum_domain = "cm.domain.com"
@@ -26,3 +25,8 @@ chartmuseum_domain = "cm.domain.com"
 ### EC2s
 ##
 ami = "ami-0b947c5d5516fa06e" # Amazon Linux 2023 (ARM)
+
+### For first run it would be nice to create test resources.
+## This will create test deployments and other resources that will show if everything is configured correctly.
+##
+create_test_resources = true

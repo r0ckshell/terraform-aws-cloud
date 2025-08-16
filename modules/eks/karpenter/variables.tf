@@ -11,8 +11,12 @@ variable "cluster_endpoint" {
   type = string
 }
 variable "node_iam_role_additional_policies" {
-  type        = map(string)
-  default     = {}
+  type    = map(string)
+  default = {}
+}
+variable "on_spot_nodes" {
+  type    = bool
+  default = false
 }
 
 variable "namespace" {
@@ -21,8 +25,8 @@ variable "namespace" {
 }
 
 variable "create_test_resources" {
-  type        = bool
-  default     = false
+  type    = bool
+  default = false
 }
 
 variable "tags" {

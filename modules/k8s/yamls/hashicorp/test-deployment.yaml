@@ -2,8 +2,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: test-sa # should be added 
-automountServiceAccountToken: true
+  name: test-sa
 
 ---
 apiVersion: apps/v1
@@ -12,7 +11,6 @@ metadata:
   name: hv-secrets-test
   labels:
     app: hv-secrets-test
-    namespace: default
 spec:
   selector:
     matchLabels:
@@ -21,18 +19,16 @@ spec:
   template:
     metadata:
       annotations:
-        vault.hashicorp.com/agent-inject: "true" # enable Vault-injector
         vault.hashicorp.com/agent-init-first: "true"
-        
-        vault.hashicorp.com/role: readonly-hv-role
-
-        vault.hashicorp.com/agent-inject-secret-envs: /v1/kv/data/test/secrets # Path to secret in Vault
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/agent-inject-secret-envs: /v1/apps/data/test/secret
         vault.hashicorp.com/agent-inject-template-envs: |
-          {{- with secret "kv/test/secrets" -}}
+          {{- with secret "apps/data/test/secret" -}}
           {{- range $key, $value := .Data.data }}
-          {{ $key | toUpper }}: {{ printf "'%s'" $value }}
+          export {{ $key | toUpper }}={{ printf "'%s'" $value }}
           {{- end }}
           {{- end }}
+        vault.hashicorp.com/role: readonly-hv-role
       labels:
         app: hv-secrets-test
     spec:
@@ -44,12 +40,19 @@ spec:
         command: [ "/bin/sh", "-c" ]
         args:
           - |
-            cat /vault/secrets/envs
-            while true;do sleep 1;done
+            echo "Checking for Vault secrets..."
+            ls -la /vault/secrets/
+            if [ -f /vault/secrets/envs ]; then
+              echo "Found secrets file:"
+              cat /vault/secrets/envs
+            else
+              echo "No secrets file found"
+            fi
+            while true; do sleep 30; done
         resources:
           requests:
-            cpu: "50m"
-            memory: "128Mi"
+            cpu: 10m
+            memory: 128Mi
           limits:
-            cpu: "100m"
-            memory: "256Mi"
+            cpu: 50m
+            memory: 256Mi

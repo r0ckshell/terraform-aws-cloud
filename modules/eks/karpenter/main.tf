@@ -46,6 +46,8 @@ resource "helm_release" "karpenter" {
 
     service_account = "${module.aws_eks_karpenter[0].service_account}"
     iam_role_arn    = "${module.aws_eks_karpenter[0].iam_role_arn}"
+
+    replicas = var.on_spot_nodes ? 2 : 1
   })]
 
   cleanup_on_fail = true

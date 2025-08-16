@@ -32,12 +32,13 @@ module "rds" {
 }
 
 module "eks" {
-  source             = "./modules/eks"
-  kubernetes_version = var.kubernetes_version
-  vpc_id             = module.vpc.vpc_id
-  vpc_cidr_block     = module.vpc.vpc_cidr_block
-  private_subnets    = module.vpc.private_subnets
-  cluster_name       = local.cluster_name
+  source                = "./modules/eks"
+  kubernetes_version    = var.kubernetes_version
+  create_test_resources = var.create_test_resources
+  vpc_id                = module.vpc.vpc_id
+  vpc_cidr_block        = module.vpc.vpc_cidr_block
+  private_subnets       = module.vpc.private_subnets
+  cluster_name          = local.cluster_name
 
   tags = local.tags
 }

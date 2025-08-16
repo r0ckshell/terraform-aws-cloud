@@ -67,13 +67,14 @@ module "policy_attachment" {
 ## Create namespaces
 ##
 resource "kubernetes_namespace" "this" {
-  for_each = toset(local.namespaces)
+  for_each = local.namespaces
 
   metadata {
-    labels = {
-      Name      = each.key
-      CreatedBy = "Terraform"
-    }
+    labels = merge({
+      "name"                        = "${each.key}"
+      "kubernetes.io/metadata.name" = "${each.key}"
+      "kubernetes.io/managed-by"    = "Terraform"
+    }, try(each.value.labels, {}))
 
     name = each.key
   }
@@ -139,4 +140,8 @@ resource "kubernetes_service_account" "this" {
     aws_iam_role.this,
     kubernetes_namespace.this,
   ]
+}
+
+module "kyverno" {
+  source = "./kyverno"
 }
