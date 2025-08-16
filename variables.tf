@@ -1,20 +1,17 @@
-### AWS Creds
+## AWS
 ##
 variable "AWS_REGION" {
   type        = string
   description = "AWS_REGION"
   default     = "us-east-1"
 }
-variable "AWS_ACCESS_KEY_ID" {
+variable "AWS_PROFILE" {
   type        = string
-  description = "AWS_ACCESS_KEY_ID"
-}
-variable "AWS_SECRET_ACCESS_KEY" {
-  type        = string
-  description = "AWS_SECRET_ACCESS_KEY"
+  description = "AWS_PROFILE"
+  default     = "default"
 }
 
-### VPC
+## VPC
 ##
 variable "vpc_name" {
   type        = string
@@ -42,7 +39,7 @@ variable "private_subnet_cidrs" {
   default     = ["10.0.101.0/24", "10.0.102.0/24"]
 }
 
-### EKS
+## EKS
 ##
 variable "cluster_name" {
   type        = string
@@ -60,7 +57,7 @@ variable "use_karpenter" {
   default     = true
 }
 
-### K8S
+## K8S
 ##
 variable "vault_addr" {
   type        = string
@@ -71,7 +68,7 @@ variable "chartmuseum_domain" {
   description = "Chartmuseum server domain name"
 }
 
-### EC2s
+## EC2s
 ##
 variable "ami" {
   type        = string
@@ -79,7 +76,7 @@ variable "ami" {
   default     = "ami-0b947c5d5516fa06e"
 }
 
-### Test Resources
+## Test Resources
 ##
 variable "create_test_resources" {
   type        = bool

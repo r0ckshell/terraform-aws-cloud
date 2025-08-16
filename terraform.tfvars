@@ -1,9 +1,6 @@
-### AWS (deployer keys)
-## TODO: Use AWS_PROFILE instead of AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.
+### AWS
 ##
-AWS_REGION            = "<aws-region>"
-AWS_ACCESS_KEY_ID     = "<aws-access-key-id>"
-AWS_SECRET_ACCESS_KEY = "<aws-secret-access-key>"
+AWS_PROFILE = "<aws-profile>"
 
 ### VPC
 ##

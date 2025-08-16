@@ -23,13 +23,9 @@ terraform {
 }
 
 provider "aws" {
-  region     = var.AWS_REGION
-  access_key = var.AWS_ACCESS_KEY_ID
-  secret_key = var.AWS_SECRET_ACCESS_KEY
+  profile = var.AWS_PROFILE
 }
 
-## TODO: Use AWS_PROFILE instead of AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.
-##
 provider "kubernetes" {
   host                   = module.eks.cluster_endpoint
   cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
@@ -38,15 +34,11 @@ provider "kubernetes" {
     args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
     command     = "aws"
     env = {
-      AWS_REGION            = var.AWS_REGION
-      AWS_ACCESS_KEY_ID     = var.AWS_ACCESS_KEY_ID
-      AWS_SECRET_ACCESS_KEY = var.AWS_SECRET_ACCESS_KEY
+      AWS_PROFILE = var.AWS_PROFILE
     }
   }
 }
 
-## TODO: Use AWS_PROFILE instead of AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.
-##
 provider "helm" {
   kubernetes {
     host                   = module.eks.cluster_endpoint
@@ -56,9 +48,7 @@ provider "helm" {
       args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
       command     = "aws"
       env = {
-        AWS_REGION            = var.AWS_REGION
-        AWS_ACCESS_KEY_ID     = var.AWS_ACCESS_KEY_ID
-        AWS_SECRET_ACCESS_KEY = var.AWS_SECRET_ACCESS_KEY
+        AWS_PROFILE = var.AWS_PROFILE
       }
     }
   }
